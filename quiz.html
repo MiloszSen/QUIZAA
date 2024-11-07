@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz PLC</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        .quiz-container {
+            width: 90%;
+            max-width: 600px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .question {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .options button {
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .options button:hover {
+            background-color: #e0e0e0;
+        }
+        .result {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+        .mistakes {
+            font-size: 16px;
+            margin-top: 15px;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <h1>Quiz PLC</h1>
+    <div id="question-container">
+        <div class="question" id="question">Pytanie pojawi się tutaj</div>
+        <div class="options">
+            <button onclick="checkAnswer(0)">Odpowiedź 1</button>
+            <button onclick="checkAnswer(1)">Odpowiedź 2</button>
+            <button onclick="checkAnswer(2)">Odpowiedź 3</button>
+            <button onclick="checkAnswer(3)">Odpowiedź 4</button>
+        </div>
+    </div>
+    <div id="result" class="result"></div>
+    <div id="mistakes" class="mistakes"></div>
+</div>
+
+<script>
+    const questions = [
+    {
+        "question": "Jakiego adresu zmiennej użyjesz do wpisania wartości z czujnika w tym ćwiczeniu?",
+        "options": ["16#1m", "0x2I", "%QB3", "%IWm"],
+        "answer": "%IWm"
+    },
+    {
+        "question": "Jaka metoda podłączenia czujnika temperatury jest najlepsza?",
+        "options": ["Dwuprzewodowo", "Z siecią Wi-Fi", "Przewodowo z modułem USB", "Czteroprzewodowo"],
+        "answer": "Czteroprzewodowo"
+    },
+    {
+        "question": "Bloczek FB jakie operacje wykonuje?",
+        "options": ["Zapisuje wyniki na stałe w pamięci programu", "Resetuje zmienne globalne", "Wyłącza moduł czasowy", "Wykonuje operacje na wejściach tego bloczku oraz na komórkach pamięci zmienionych podczas pracy programu"],
+        "answer": "Wykonuje operacje na wejściach tego bloczku oraz na komórkach pamięci zmienionych podczas pracy programu"
+    },
+    {
+        "question": "Co to HMI?",
+        "options": ["Moduł zabezpieczający PLC", "Panel komunikacyjny", "Sterownik wejść analogowych", "Panel operatorski"],
+        "answer": "Panel operatorski"
+    },
+    {
+        "question": "Jaki jest zakres temperaturowy Pt100?",
+        "options": ["0-1000", "-50:50", "50:200", "-200:600"],
+        "answer": "-200:600"
+    },
+    {
+        "question": "Co spowoduje zwiększenie histerezy?",
+        "options": ["Zwiększenie częstotliwości sygnału", "Zmniejszenie poziomu sygnału", "Stabilizacja sygnału", "Zmniejszenie częstotliwości"],
+        "answer": "Zmniejszenie częstotliwości"
+    },
+    {
+        "question": "Transmitancją jakiego obiektu można wyrazić obiekt cieplny?",
+        "options": ["Nieruchomy z opóźnieniem", "Stały ze zmianą stanu", "Inercyjny bez opóźnienia", "Inercyjny 1 rzędu z opóźnieniem"],
+        "answer": "Inercyjny 1 rzędu z opóźnieniem"
+    },
+    {
+        "question": "Gdzie znajduje się CPU?",
+        "options": ["Moduł komunikacyjny", "Jednostka sterująca IO", "Panel operatorski", "Jednostka centralna/główna"],
+        "answer": "Jednostka centralna/główna"
+    },
+    {
+        "question": "Co spowoduje zwiększenie czasu martwego obiektu?",
+        "options": ["Zmniejszenie czasu odpowiedzi", "Zmniejszenie amplitudy oscylacji", "Przyspieszenie sygnału", "Zwiększenie amplitudy oscylacji"],
+        "answer": "Zwiększenie amplitudy oscylacji"
+    },
+    {
+        "question": "Co pozostaje stałe przy sterowaniu PWM?",
+        "options": ["Tylko częstotliwość", "Tylko amplituda", "Czas martwy", "Amplituda i częstotliwość"],
+        "answer": "Amplituda i częstotliwość"
+    },
+    {
+        "question": "Do ilu HSC wyposażony jest S7-1200?",
+        "options": ["4", "8", "2", "6"],
+        "answer": "6"
+    },
+    {
+        "question": "Co to HSC?",
+        "options": ["Szybkie wejścia analogowe", "Czasowy licznik programowy", "Licznik impulsowy niskiej częstotliwości", "Szybkie liczniki"],
+        "answer": "Szybkie liczniki"
+    },
+    {
+        "question": "Skrót CPU oznacza...",
+        "options": ["Jednostka pamięci stałej", "Komunikator panelowy", "Procesor komunikacyjny", "Jednostkę centralną PLC"],
+        "answer": "Jednostkę centralną PLC"
+    },
+    {
+        "question": "Na stanowisku 1 nie ma modułu...",
+        "options": ["AO (analog output)", "AI (analog input)", "DO (digital output)", "DI (digital input)"],
+        "answer": "DI (digital input)"
+    },
+    {
+        "question": "Termopara do wejść PLC?",
+        "options": ["Zwykłe przewody", "Podłączana bezpośrednio", "Bezpośrednie złącze termopary", "Przewody kompensacyjne"],
+        "answer": "Przewody kompensacyjne"
+    },
+    {
+        "question": "Jak zmierzymy temperaturę w piecu metalurgicznym?",
+        "options": ["Czujnik zbliżeniowy", "Czujnik ultradźwiękowy", "Enkoder", "Termopara"],
+        "answer": "Termopara"
+    },
+    {
+        "question": "Blok DB stosowany w środowisku STEP7 oznacza?",
+        "options": ["Blok wyjściowy", "Blok interfejsu", "Blok funkcjonalny", "Blok Danych"],
+        "answer": "Blok Danych"
+    },
+    {
+        "question": "Blok FC stosowany w środowisku STEP7 oznacza?",
+        "options": ["Blok wyjściowy", "Blok Danych", "Blok Pamięci", "Blok funkcyjny"],
+        "answer": "Blok funkcyjny"
+    },
+    {
+        "question": "Ile startowych Bloków Organizacyjnych dopuszcza się w użyciu w sterownikach PLC?",
+        "options": ["3", "1", "5", "2"],
+        "answer": "2"
+    },
+    {
+        "question": "W sterowniku S7-1200 zakłócenia o częstotliwości 50Hz (pochodzące od sieci elektroenergetycznej) redukuje się na wejściu analogowym modułu RTD?",
+        "options": ["Za pomocą filtra wyjściowego", "Przez zmniejszenie czułości modułu", "Przez odłączenie modułu", "Przez wybór właściwego czasu integracji sygnału mierzonego"],
+        "answer": "Przez wybór właściwego czasu integracji sygnału mierzonego"
+    },
+    {
+        "question": "Które z poniższych nie jest językiem programowania PLC według jakiejś normy?",
+        "options": ["IL", "LD", "ST", "BRO"],
+        "answer": "BRO"
+    },
+    {
+        "question": "Co może wywołać blok BO?",
+        "options": ["Automatyczne wejścia", "Licznik czasowy", "Przerwanie wejścia", "Interwał czasowy lub przerwanie"],
+        "answer": "Interwał czasowy lub przerwanie"
+    },
+    {
+        "question": "Do ilu zdarzeń opóźnionych można skonfigurować na sterownikach PLC?",
+        "options": ["2", "8", "6", "4"],
+        "answer": "4"
+    },
+    {
+        "question": "Ile jest generatorów impulsowych?",
+        "options": ["1", "4", "3", "2"],
+        "answer": "2"
+    },
+    {
+        "question": "Który z języków PLC jest tekstowy?",
+        "options": ["ST", "FBD", "LD", "IL"],
+        "answer": "IL"
+    },
+    {
+        "question": "Co nie powinno znaleźć się na panelu operatorskim w tym ćwiczeniu?",
+        "options": ["Pomiar napięcia", "Pomiar prądu", "Pomiar temperatury", "Pomiar ciśnienia"],
+        "answer": "Pomiar ciśnienia"
+    },
+    {
+        "question": "Pt100 do sterownika podłączone?",
+        "options": ["Dwuprzewodowo", "Bezprzewodowo", "Trójprzewodowo", "Czteroprzewodowo"],
+        "answer": "Czteroprzewodowo"
+    },
+    {
+        "question": "Zasada działania half-duplex?",
+        "options": ["W pełnym dupleksie", "Tylko do zapisu", "Tylko do odczytu", "Naprzemiennie do odczytu i zapisu"],
+        "answer": "Naprzemiennie do odczytu i zapisu"
+    }
+];
+
+    let shuffledQuestions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let mistakes = [];
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function startQuiz() {
+        shuffledQuestions = [...questions];
+        shuffle(shuffledQuestions); // Mieszamy kolejność pytań
+        currentQuestionIndex = 0;
+        score = 0;
+        mistakes = [];
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        document.getElementById("result").innerHTML = "";
+        const questionData = shuffledQuestions[currentQuestionIndex];
+        document.getElementById("question").innerText = questionData.question;
+        
+        const options = document.querySelectorAll(".options button");
+        const shuffledOptions = [...questionData.options];
+        shuffle(shuffledOptions); // Mieszamy odpowiedzi
+
+        options.forEach((button, index) => {
+            button.innerText = shuffledOptions[index];
+            button.disabled = false;
+        });
+    }
+
+    function checkAnswer(selectedOption) {
+        const selectedText = document.querySelectorAll(".options button")[selectedOption].innerText;
+        const correctAnswer = shuffledQuestions[currentQuestionIndex].answer;
+
+        if (selectedText === correctAnswer) {
+            score++;
+        } else {
+            // Zapisujemy błędną odpowiedź
+            mistakes.push({
+                question: shuffledQuestions[currentQuestionIndex].question,
+                selectedAnswer: selectedText,
+                correctAnswer: correctAnswer
+            });
+        }
+        currentQuestionIndex++;
+        if (currentQuestionIndex < shuffledQuestions.length) {
+            loadQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById("question-container").style.display = "none";
+        document.getElementById("result").innerText = `Twój wynik: ${score} / ${shuffledQuestions.length}`;
+
+        if (mistakes.length > 0) {
+            let mistakeText = "Błędne odpowiedzi:<br>";
+            mistakes.forEach((mistake, index) => {
+                mistakeText += `${index + 1}. ${mistake.question}<br>Twoja odpowiedź: ${mistake.selectedAnswer} <br>Poprawna odpowiedź: ${mistake.correctAnswer}<br><br>`;
+            });
+            document.getElementById("mistakes").innerHTML = mistakeText;
+        } else {
+            document.getElementById("mistakes").innerText = "Gratulacje! Wszystkie odpowiedzi były poprawne.";
+        }
+    }
+
+    // Startujemy quiz na początku
+    startQuiz();
+</script>
+
+</body>
+</html>
